@@ -1,0 +1,11 @@
+apiVersion: skaffold/v2beta8
+kind: Config
+build:
+  artifacts:
+  - image: biandayu/simple-service
+    jib: {}
+deploy:
+  kubectl:
+    manifests:
+      - sample-deployment.yaml
+      - sample-ingress.yaml

@@ -1,0 +1,147 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-a
+  labels:
+    app: service-a
+spec:
+  publishNotReadyAddresses: true
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http
+  selector:
+    app: service-a
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-b
+  labels:
+    app: service-b
+spec:
+  publishNotReadyAddresses: true
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http
+  selector:
+    app: service-b
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-c
+  labels:
+    app: service-c
+spec:
+  publishNotReadyAddresses: true
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http
+  selector:
+    app: service-c
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-a
+  labels:
+    app: service-a
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-a
+  template:
+    metadata:
+      name: service-a
+      labels:
+        app: service-a
+        autotrace: enabled
+    spec:
+      containers:
+        - name: service-a
+          image: biandayu/simple-service
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: UPSTREAM
+              value: "http://service-b:8080"
+            - name: OPENTRACING_JAEGER_SERVICE_NAME
+              value: "service-a"
+            - name: OPENTRACING_JAEGER_ENABLED
+              value: "true"
+            - name: OPENTRACING_JAEGER_ENABLE-B3-PROPAGATION
+              value: "true"
+            - name: OPENTRACING_JAEGER_PROBABILISTIC_SAMPLER_SAMPLING_RATE
+              value: "1.0"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-b
+  labels:
+    app: service-b
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-b
+  template:
+    metadata:
+      name: service-b
+      labels:
+        app: service-b
+        autotrace: enabled
+    spec:
+      containers:
+        - name: service-b
+          image: biandayu/simple-service
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: UPSTREAM
+              value: "http://service-c:8080"
+            - name: OPENTRACING_JAEGER_SERVICE_NAME
+              value: "service-b"
+            - name: OPENTRACING_JAEGER_ENABLED
+              value: "true"
+            - name: OPENTRACING_JAEGER_ENABLE-B3-PROPAGATION
+              value: "true"
+            - name: OPENTRACING_JAEGER_PROBABILISTIC_SAMPLER_SAMPLING_RATE
+              value: "1.0"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-c
+  labels:
+    app: service-c
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-c
+  template:
+    metadata:
+      name: service-c
+      labels:
+        app: service-c
+        autotrace: enabled
+    spec:
+      containers:
+        - name: service-c
+          image: biandayu/simple-service
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: UPSTREAM
+              value: "https://www.thecocktaildb.com/"
+            - name: OPENTRACING_JAEGER_SERVICE_NAME
+              value: "service-c"
+            - name: OPENTRACING_JAEGER_ENABLED
+              value: "true"
+            - name: OPENTRACING_JAEGER_ENABLE-B3-PROPAGATION
+              value: "true"
+            - name: OPENTRACING_JAEGER_PROBABILISTIC_SAMPLER_SAMPLING_RATE
+              value: "1.0"
